@@ -1,0 +1,43 @@
+This is a Dockerfile that specifies the steps for building a Docker image.
+
+Step 1 specifies the base image as Ubuntu 18.04.
+Step 2 updates the operating system packages, installs additional software such as wget, nginx, software-properties-common, apt-transport-https, and dotnet-sdk-3.0.
+Step 3 starts the Nginx service.
+Step 4 copies the default Nginx configuration file to the container.
+Step 5 sets the working directory to /app in the container.
+Step 6 copies the website code to the container's /app directory.
+Step 7 exposes port 80 for incoming HTTP requests to the container's port 8080.
+Step 8 specifies the entry point for the container, which is to run the "website.dll" file with the "dotnet" command.
+Once this Dockerfile is built, it will create a Docker image that includes all the software, configuration files, 
+and code required to run the website. The Docker container created from this image will have Nginx, .NET Core, and the website's code, 
+making it easy to deploy and run the website on any system that has Docker installed.
+
+
+# Step 1: Specify the parent image for the new image
+FROM ubuntu:18.04
+
+# Step 2: Update OS packages and install additional software
+RUN apt -y update &&  apt install -y wget nginx software-properties-common apt-transport-https \
+	&& wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+	&& dpkg -i packages-microsoft-prod.deb \
+	&& add-apt-repository universe \
+	&& apt -y update \
+	&& apt install -y dotnet-sdk-3.0
+
+# Step 3: Configure Nginx environment
+CMD service nginx start
+
+# Step 4: Configure Nginx environment
+COPY ./default /etc/nginx/sites-available/default
+
+# STEP 5: Configure work directory
+WORKDIR /app
+
+# STEP 6: Copy website code to container
+COPY ./website/. .
+
+# STEP 7: Configure network requirements
+EXPOSE 80:8080
+
+# STEP 8: Define the entry point of the process that runs in the container
+ENTRYPOINT ["dotnet", "website.dll"]
